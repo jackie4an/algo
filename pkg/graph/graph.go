@@ -13,6 +13,10 @@ type Node[T comparable] struct {
 	Incoming  []*Edge[T]
 }
 
+func NewNode[T comparable](label T) Node[T] {
+	return Node[T]{Label: label}
+}
+
 func (n *Node[T]) AddNeighbor(neighbor *Node[T]) {
 	if !slices.Contains(n.Neighbors, neighbor) {
 		n.Neighbors = append(n.Neighbors, neighbor)
@@ -55,27 +59,26 @@ func NewGraph[T comparable](directed bool) *Graph[T] {
 	}
 }
 
-func (g *Graph[T]) InsertEdge(from, to T, weight int) {
-	if g.insertEdge(from, to, weight) {
+func (g *Graph[T]) InsertEdge(src, dst *Node[T], weight int) {
+	if g.insertEdge(src, dst, weight) {
 		g.EdgesCnt++
 	}
 
 	if !g.Directed {
-		g.insertEdge(from, to, weight)
+		g.insertEdge(dst, src, weight)
 	}
 }
 
-func (g *Graph[T]) AddNode(label T) *Node[T] {
+func (g *Graph[T]) AddNode(n *Node[T]) *Node[T] {
 	if g.Nodes == nil {
 		g.Nodes = make(map[T]*Node[T])
 	}
 
-	n, ok := g.Nodes[label]
-	if !ok {
-		n = &Node[T]{Label: label}
-		g.Nodes[label] = n
+	if _, ok := g.Nodes[n.Label]; !ok {
 		g.NodesCnt++
 	}
+
+	g.Nodes[n.Label] = n
 
 	return n
 }
@@ -88,7 +91,8 @@ func (g *Graph[T]) Transpose() *Graph[T] {
 	gt := NewGraph[T](true)
 
 	for e := range g.BFSEdgesAll() {
-		gt.InsertEdge(e.Dst.Label, e.Src.Label, e.Weight)
+		src, dst := NewNode(e.Src.Label), NewNode(e.Dst.Label)
+		gt.InsertEdge(&src, &dst, e.Weight)
 	}
 
 	return gt
@@ -111,28 +115,23 @@ func (g Graph[T]) String() string {
 	return sb.String()
 }
 
-func (g *Graph[T]) insertEdge(from, to T, weight int) bool {
+func (g *Graph[T]) insertEdge(src, dst *Node[T], weight int) bool {
+	srcl, dstl := src.Label, dst.Label
+
+	g.AddNode(src)
+	g.AddNode(dst)
+
 	if g.Edges == nil {
 		g.Edges = make(map[T]map[T]*Edge[T])
 	}
 
-	if g.Edges[from] == nil {
-		g.Edges[from] = make(map[T]*Edge[T])
+	if g.Edges[srcl] == nil {
+		g.Edges[srcl] = make(map[T]*Edge[T])
 	}
 
-	if e, ok := g.Edges[from][to]; ok {
+	if e, ok := g.Edges[srcl][dstl]; ok {
 		e.Weight = weight
 		return false
-	}
-
-	src, ok := g.Nodes[from]
-	if !ok {
-		src = g.AddNode(from)
-	}
-
-	dst, ok := g.Nodes[to]
-	if !ok {
-		dst = g.AddNode(to)
 	}
 
 	e := &Edge[T]{
@@ -141,7 +140,7 @@ func (g *Graph[T]) insertEdge(from, to T, weight int) bool {
 		Weight: weight,
 	}
 
-	g.Edges[from][to] = e
+	g.Edges[srcl][dstl] = e
 
 	src.AddNeighbor(dst)
 	dst.AddIncoming(e)
