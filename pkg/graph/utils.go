@@ -34,13 +34,13 @@ func (g *Graph[T]) TopSort() ([]*Node[T], bool) {
 
 	var stack []*Node[T]
 
-	dfs := newDFS(g)
-	dfs.onNodeProcessed = func(n *Node[T]) bool {
+	dfs := NewDFS(g)
+	dfs.OnNodeProcessed = func(n *Node[T]) bool {
 		stack = append(stack, n)
 		return true
 	}
 
-	dfs.runAll()
+	dfs.RunAll()
 
 	res := make([]*Node[T], len(stack))
 	for i := len(stack) - 1; i >= 0; i-- {
@@ -56,10 +56,10 @@ func (g *Graph[T]) hasDirectedCycle() ([]*Node[T], bool) {
 		hasCycle bool
 	)
 
-	dfs := newDFS(g)
+	dfs := NewDFS(g)
 
-	dfs.onEdgeBefore = func(e *Edge[T]) bool {
-		if dfs.state[e.Dst] == discovered {
+	dfs.OnEdgeBefore = func(e *Edge[T]) bool {
+		if dfs.State[e.Dst] == Discovered {
 			hasCycle = true
 			cycle = append(cycle, e.Src)
 			return false
@@ -67,7 +67,7 @@ func (g *Graph[T]) hasDirectedCycle() ([]*Node[T], bool) {
 		return true
 	}
 
-	dfs.onEdgeAfter = func(e *Edge[T]) bool {
+	dfs.OnEdgeAfter = func(e *Edge[T]) bool {
 		if hasCycle {
 			cycle = append(cycle, e.Src)
 			return false
@@ -75,7 +75,7 @@ func (g *Graph[T]) hasDirectedCycle() ([]*Node[T], bool) {
 		return true
 	}
 
-	dfs.runAll()
+	dfs.RunAll()
 
 	return cycle, hasCycle
 }

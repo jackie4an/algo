@@ -16,8 +16,8 @@ func (g *Graph[T]) TwoColor() (map[*Node[T]]color, bool) {
 	}
 
 	bipartite := true
-	bfs := newBFS(g)
-	bfs.onProcessEdge = func(e *Edge[T]) bool {
+	bfs := NewBFS(g)
+	bfs.OnProcessEdge = func(e *Edge[T]) bool {
 		u, v := e.Src, e.Dst
 
 		if colors[u] == colors[v] {
@@ -42,7 +42,7 @@ func (g *Graph[T]) TwoColor() (map[*Node[T]]color, bool) {
 			return nil, false
 		}
 
-		if _, ok := bfs.state[n]; ok {
+		if _, ok := bfs.State[n]; ok {
 			continue
 		}
 

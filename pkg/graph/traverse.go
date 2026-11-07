@@ -3,47 +3,47 @@ package graph
 type nodeState byte
 
 const (
-	discovered nodeState = iota + 1
-	processed
+	Discovered nodeState = iota + 1
+	Processed
 )
 
 type traverse[T comparable] struct {
 	g                *Graph[T]
-	state            map[*Node[T]]nodeState
-	parent           map[*Node[T]]*Node[T]
-	onNodeDiscovered func(*Node[T]) bool
-	onNodeProcessed  func(*Node[T]) bool
+	State            map[*Node[T]]nodeState
+	Parent           map[*Node[T]]*Node[T]
+	OnNodeDiscovered func(*Node[T]) bool
+	OnNodeProcessed  func(*Node[T]) bool
 }
 
 type dfs[T comparable] struct {
 	traverse[T]
-	onEdgeBefore func(*Edge[T]) bool
-	onEdgeAfter  func(*Edge[T]) bool
+	OnEdgeBefore func(*Edge[T]) bool
+	OnEdgeAfter  func(*Edge[T]) bool
 }
 
 type bfs[T comparable] struct {
 	traverse[T]
-	onProcessEdge func(*Edge[T]) bool
+	OnProcessEdge func(*Edge[T]) bool
 }
 
-func newDFS[T comparable](g *Graph[T]) dfs[T] {
+func NewDFS[T comparable](g *Graph[T]) dfs[T] {
 	d := dfs[T]{
 		traverse: traverse[T]{
 			g:      g,
-			state:  make(map[*Node[T]]nodeState),
-			parent: make(map[*Node[T]]*Node[T]),
+			State:  make(map[*Node[T]]nodeState),
+			Parent: make(map[*Node[T]]*Node[T]),
 		},
 	}
 
 	return d
 }
 
-func newBFS[T comparable](g *Graph[T]) bfs[T] {
+func NewBFS[T comparable](g *Graph[T]) bfs[T] {
 	b := bfs[T]{
 		traverse: traverse[T]{
 			g:      g,
-			state:  make(map[*Node[T]]nodeState),
-			parent: make(map[*Node[T]]*Node[T]),
+			State:  make(map[*Node[T]]nodeState),
+			Parent: make(map[*Node[T]]*Node[T]),
 		},
 	}
 
@@ -51,29 +51,29 @@ func newBFS[T comparable](g *Graph[T]) bfs[T] {
 }
 
 func (t *traverse[T]) prepare() {
-	if t.state == nil {
-		t.state = make(map[*Node[T]]nodeState)
+	if t.State == nil {
+		t.State = make(map[*Node[T]]nodeState)
 	}
 
-	if t.parent == nil {
-		t.parent = make(map[*Node[T]]*Node[T])
+	if t.Parent == nil {
+		t.Parent = make(map[*Node[T]]*Node[T])
 	}
 }
 
-func (d *dfs[T]) run(start *Node[T]) {
+func (d *dfs[T]) Run(start *Node[T]) {
 	if d.g == nil || start == nil || d.g.Nodes[start.Label] != start {
 		return
 	}
 
 	d.prepare()
 
-	d.parent[start] = nil
+	d.Parent[start] = nil
 	if !d.dfsRec(start) {
 		return
 	}
 }
 
-func (d *dfs[T]) runAll() {
+func (d *dfs[T]) RunAll() {
 	if d.g == nil {
 		return
 	}
@@ -81,11 +81,11 @@ func (d *dfs[T]) runAll() {
 	d.prepare()
 
 	for _, n := range d.g.Nodes {
-		if _, ok := d.state[n]; ok {
+		if _, ok := d.State[n]; ok {
 			continue
 		}
 
-		d.parent[n] = nil // component's root
+		d.Parent[n] = nil // component's root
 		if !d.dfsRec(n) {
 			return
 		}
@@ -93,10 +93,10 @@ func (d *dfs[T]) runAll() {
 }
 
 func (d *dfs[T]) dfsRec(u *Node[T]) bool {
-	pu := d.parent[u]
-	d.state[u] = discovered
+	pu := d.Parent[u]
+	d.State[u] = Discovered
 
-	if d.onNodeDiscovered != nil && !d.onNodeDiscovered(u) {
+	if d.OnNodeDiscovered != nil && !d.OnNodeDiscovered(u) {
 		return false
 	}
 
@@ -107,15 +107,15 @@ func (d *dfs[T]) dfsRec(u *Node[T]) bool {
 			continue
 		}
 
-		_, hasParent := d.parent[v]
+		_, hasParent := d.Parent[v]
 		if !hasParent {
-			d.parent[v] = u
+			d.Parent[v] = u
 		}
 
-		sv, isDiscovered := d.state[v]
+		sv, isDiscovered := d.State[v]
 
-		if d.g.Directed || (v != pu && sv != processed) {
-			if d.onEdgeBefore != nil && !d.onEdgeBefore(e) {
+		if d.g.Directed || (v != pu && sv != Processed) {
+			if d.OnEdgeBefore != nil && !d.OnEdgeBefore(e) {
 				return false
 			}
 		}
@@ -123,7 +123,7 @@ func (d *dfs[T]) dfsRec(u *Node[T]) bool {
 		if !isDiscovered {
 			dfsOK := d.dfsRec(v)
 
-			if d.onEdgeAfter != nil && !d.onEdgeAfter(e) {
+			if d.OnEdgeAfter != nil && !d.OnEdgeAfter(e) {
 				return false
 			}
 
@@ -133,15 +133,15 @@ func (d *dfs[T]) dfsRec(u *Node[T]) bool {
 		}
 	}
 
-	d.state[u] = processed
-	if d.onNodeProcessed != nil && !d.onNodeProcessed(u) {
+	d.State[u] = Processed
+	if d.OnNodeProcessed != nil && !d.OnNodeProcessed(u) {
 		return false
 	}
 
 	return true
 }
 
-func (b *bfs[T]) run(start *Node[T]) {
+func (b *bfs[T]) Run(start *Node[T]) {
 	if b.g == nil || start == nil || b.g.Nodes[start.Label] != start {
 		return
 	}
@@ -151,7 +151,7 @@ func (b *bfs[T]) run(start *Node[T]) {
 	b.bfs(start)
 }
 
-func (b *bfs[T]) runAll() {
+func (b *bfs[T]) RunAll() {
 	if b.g == nil {
 		return
 	}
@@ -159,7 +159,7 @@ func (b *bfs[T]) runAll() {
 	b.prepare()
 
 	for _, n := range b.g.Nodes {
-		if _, ok := b.state[n]; ok {
+		if _, ok := b.State[n]; ok {
 			continue
 		}
 
@@ -170,10 +170,10 @@ func (b *bfs[T]) runAll() {
 func (b *bfs[T]) bfs(start *Node[T]) {
 	que := []*Node[T]{start}
 
-	b.state[start] = discovered
-	b.parent[start] = nil
+	b.State[start] = Discovered
+	b.Parent[start] = nil
 
-	if b.onNodeDiscovered != nil && !b.onNodeDiscovered(start) {
+	if b.OnNodeDiscovered != nil && !b.OnNodeDiscovered(start) {
 		return
 	}
 
@@ -187,27 +187,27 @@ func (b *bfs[T]) bfs(start *Node[T]) {
 				continue
 			}
 
-			sv, isDiscovered := b.state[v]
+			sv, isDiscovered := b.State[v]
 
 			if !isDiscovered {
 				que = append(que, v)
-				b.parent[v] = u
-				b.state[v] = discovered
+				b.Parent[v] = u
+				b.State[v] = Discovered
 
-				if b.onNodeDiscovered != nil && !b.onNodeDiscovered(v) {
+				if b.OnNodeDiscovered != nil && !b.OnNodeDiscovered(v) {
 					return
 				}
 			}
 
-			if b.g.Directed || sv != processed {
-				if b.onProcessEdge != nil && !b.onProcessEdge(e) {
+			if b.g.Directed || sv != Processed {
+				if b.OnProcessEdge != nil && !b.OnProcessEdge(e) {
 					return
 				}
 			}
 		}
 
-		b.state[u] = processed
-		if b.onNodeProcessed != nil && !b.onNodeProcessed(u) {
+		b.State[u] = Processed
+		if b.OnNodeProcessed != nil && !b.OnNodeProcessed(u) {
 			return
 		}
 	}
