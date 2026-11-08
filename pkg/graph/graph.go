@@ -161,13 +161,11 @@ func (g *Graph[T]) nodesToString(sb *strings.Builder) {
 
 func (g *Graph[T]) edgesToString(sb *strings.Builder) {
 	first := true
-	for _, dst := range g.Edges {
-		for _, e := range dst {
-			if !first {
-				sb.WriteByte('\n')
-			}
-			sb.WriteString(e.String())
-			first = false
+	for e := range g.BFSEdgesAll() {
+		if !first {
+			sb.WriteByte('\n')
 		}
+		sb.WriteString(e.String())
+		first = false
 	}
 }
