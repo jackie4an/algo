@@ -36,18 +36,11 @@ func (d *DSU[T]) Union(a, b T) bool {
 }
 
 func (d *DSU[T]) Find(x T) T {
-	root := x
-	for d.p[root] != root {
-		root = d.p[root]
+	if x != d.p[x] {
+		d.p[x] = d.Find(d.p[x])
 	}
 
-	for x != root {
-		next := d.p[x]
-		d.p[next] = root
-		x = next
-	}
-
-	return root
+	return d.p[x]
 }
 
 func (d *DSU[T]) merge(r1, r2 T) {
