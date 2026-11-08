@@ -83,6 +83,16 @@ func (g *Graph[T]) AddNode(n *Node[T]) *Node[T] {
 	return n
 }
 
+func (g *Graph[T]) NodesAll() []*Node[T] {
+	nodes := make([]*Node[T], 0, g.NodesCnt)
+
+	for _, n := range g.Nodes {
+		nodes = append(nodes, n)
+	}
+
+	return nodes
+}
+
 func (g *Graph[T]) Transpose() *Graph[T] {
 	if !g.Directed {
 		return g
