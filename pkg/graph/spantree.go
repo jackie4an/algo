@@ -1,19 +1,9 @@
 package graph
 
 import (
-	"container/heap"
-
 	"skiena/pkg/dsu"
-	pq "skiena/pkg/prioque"
+	"skiena/pkg/prioque"
 )
-
-type pqItem[T comparable] struct {
-	e *Edge[T]
-}
-
-func (it *pqItem[T]) Priority() int {
-	return it.e.Weight
-}
 
 func (g *Graph[T]) PrimMST(start *Node[T]) *Graph[T] {
 	if g.Directed {
@@ -23,13 +13,16 @@ func (g *Graph[T]) PrimMST(start *Node[T]) *Graph[T] {
 	st := NewGraph[T](false)
 	m := g.NodesCnt - 1
 	intree := make(map[*Node[T]]bool, g.NodesCnt)
-	pq := pq.New(pq.Min)
-	heap.Init(pq)
+	pq := prioque.New[*Edge[T]](prioque.Min)
+
 	pqAddEdge := func(u *Node[T]) {
 		intree[u] = true
 		for _, e := range g.Edges[u.Label] {
 			if !intree[e.Dst] {
-				heap.Push(pq, &pqItem[T]{e})
+				pq.Push(&prioque.Item[*Edge[T]]{
+					Value:    e,
+					Priority: e.Weight,
+				})
 			}
 		}
 	}
@@ -37,7 +30,7 @@ func (g *Graph[T]) PrimMST(start *Node[T]) *Graph[T] {
 	pqAddEdge(start)
 
 	for pq.Len() > 0 && st.EdgesCnt != m {
-		e := heap.Pop(pq).(*pqItem[T]).e
+		e := pq.Pop().Value
 		if intree[e.Dst] {
 			continue
 		}
@@ -56,16 +49,20 @@ func (g *Graph[T]) Kruskal() *Graph[T] {
 	st := NewGraph[T](false)
 	m := g.NodesCnt - 1
 	dsu := dsu.New(g.NodesAll())
-	pq := pq.New(pq.Min)
+
+	items := make([]*prioque.Item[*Edge[T]], 0, g.EdgesCnt*2)
 	for _, dstmap := range g.Edges {
 		for _, e := range dstmap {
-			pq.Push(&pqItem[T]{e})
+			items = append(items, &prioque.Item[*Edge[T]]{
+				Value:    e,
+				Priority: e.Weight,
+			})
 		}
 	}
-	heap.Init(pq)
+	pq := prioque.New(prioque.Min, items...)
 
 	for pq.Len() > 0 && st.EdgesCnt != m {
-		e := heap.Pop(pq).(*pqItem[T]).e
+		e := pq.Pop().Value
 		u, v := e.Src, e.Dst
 		if dsu.Union(u, v) {
 			st.InsertEdge(u, v, e.Weight)
