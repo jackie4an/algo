@@ -83,6 +83,8 @@ func (q *priorityQueue[T]) Less(i int, j int) bool {
 
 func (q *priorityQueue[T]) Swap(i int, j int) {
 	q.que[i], q.que[j] = q.que[j], q.que[i]
+	q.que[i].index = i
+	q.que[j].index = j
 }
 
 func (q *priorityQueue[T]) Push(x any) {
