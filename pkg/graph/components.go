@@ -1,44 +1,44 @@
 package graph
 
-func (g *Graph[T]) ConnectedComponents() [][]*Node[T] {
+func (g *Graph[T]) ConnectedComponents() [][]T {
 	var (
-		res       [][]*Node[T]
-		component []*Node[T]
+		res       [][]T
+		component []T
 	)
 
 	bfs := NewBFS(g)
-	bfs.OnNodeDiscovered = func(n *Node[T]) bool {
+	bfs.OnNodeDiscovered = func(n T) bool {
 		component = append(component, n)
 		return true
 	}
 
-	for _, n := range g.Nodes {
+	for n := range g.Nodes {
 		if _, ok := bfs.State[n]; ok {
 			continue
 		}
 
 		bfs.bfs(n)
 		res = append(res, component)
-		component = []*Node[T]{}
+		component = []T{}
 	}
 
 	return res
 }
 
-func (g *Graph[T]) FindCutNodes() []*Node[T] {
+func (g *Graph[T]) FindCutNodes() []T {
 	if g.Directed {
 		return nil
 	}
 
-	var res []*Node[T]
+	var res []T
 
-	up := make(map[*Node[T]]int)       // earliest accessable time
-	tin := make(map[*Node[T]]int)      // entry node time
-	children := make(map[*Node[T]]int) // tree edge count
+	up := make(map[T]int)       // earliest accessable time
+	tin := make(map[T]int)      // entry node time
+	children := make(map[T]int) // tree edge count
 	t := 0
 
 	dfs := NewDFS(g)
-	dfs.OnNodeDiscovered = func(u *Node[T]) bool {
+	dfs.OnNodeDiscovered = func(u T) bool {
 		t++
 		up[u] = t
 		tin[u] = t
@@ -56,15 +56,15 @@ func (g *Graph[T]) FindCutNodes() []*Node[T] {
 	dfs.OnEdgeAfter = func(e *Edge[T]) bool {
 		u, v := e.Src, e.Dst
 		up[u] = min(up[u], up[v]) // tree edge
-		if dfs.Parent[u] != nil && up[v] >= tin[u] {
+		if dfs.Parent[&u] != nil && up[v] >= tin[u] {
 			res = append(res, u)
 		}
 		children[u]++
 
 		return true
 	}
-	dfs.OnNodeProcessed = func(u *Node[T]) bool {
-		if dfs.Parent[u] == nil && children[u] > 1 {
+	dfs.OnNodeProcessed = func(u T) bool {
+		if dfs.Parent[&u] == nil && children[u] > 1 {
 			res = append(res, u)
 		}
 
@@ -76,19 +76,19 @@ func (g *Graph[T]) FindCutNodes() []*Node[T] {
 	return res
 }
 
-func (g *Graph[T]) StrongComponents() [][]*Node[T] {
+func (g *Graph[T]) StrongComponents() [][]T {
 	if !g.Directed {
 		return nil
 	}
 
 	var (
-		res       [][]*Node[T]
-		component []*Node[T]
+		res       [][]T
+		component []T
 	)
 
-	dfs1Stack := make([]*Node[T], 0, len(g.Nodes))
+	dfs1Stack := make([]T, 0, len(g.Nodes))
 	dfs1 := NewDFS(g)
-	dfs1.OnNodeProcessed = func(n *Node[T]) bool {
+	dfs1.OnNodeProcessed = func(n T) bool {
 		dfs1Stack = append(dfs1Stack, n)
 		return true
 	}
@@ -97,13 +97,13 @@ func (g *Graph[T]) StrongComponents() [][]*Node[T] {
 
 	gt := g.Transpose()
 	dfs2 := NewDFS(gt)
-	dfs2.OnNodeDiscovered = func(n *Node[T]) bool {
+	dfs2.OnNodeDiscovered = func(n T) bool {
 		component = append(component, n)
 		return true
 	}
 
 	for i := len(dfs1Stack) - 1; i >= 0; i-- {
-		u := gt.Nodes[dfs1Stack[i].Label] // gt.nodes != g.nodes so dfs2 on gt will fail with g's node
+		u := dfs1Stack[i]
 
 		if _, ok := dfs2.State[u]; ok {
 			continue
@@ -111,7 +111,7 @@ func (g *Graph[T]) StrongComponents() [][]*Node[T] {
 
 		dfs2.Run(u)
 		res = append(res, component)
-		component = []*Node[T]{}
+		component = []T{}
 	}
 
 	return res

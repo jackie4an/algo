@@ -19,7 +19,7 @@ func (g *Graph[T]) IsDAG() bool {
 	}
 }
 
-func (g *Graph[T]) HasCycle() ([]*Node[T], bool) {
+func (g *Graph[T]) HasCycle() ([]T, bool) {
 	if g.Directed {
 		return g.hasDirectedCycle()
 	} else {
@@ -27,22 +27,22 @@ func (g *Graph[T]) HasCycle() ([]*Node[T], bool) {
 	}
 }
 
-func (g *Graph[T]) TopSort() ([]*Node[T], bool) {
+func (g *Graph[T]) TopSort() ([]T, bool) {
 	if !g.IsDAG() {
 		return nil, false
 	}
 
-	var stack []*Node[T]
+	var stack []T
 
 	dfs := NewDFS(g)
-	dfs.OnNodeProcessed = func(n *Node[T]) bool {
+	dfs.OnNodeProcessed = func(n T) bool {
 		stack = append(stack, n)
 		return true
 	}
 
 	dfs.RunAll()
 
-	res := make([]*Node[T], len(stack))
+	res := make([]T, len(stack))
 	for i := len(stack) - 1; i >= 0; i-- {
 		res[len(stack)-i-1] = stack[i]
 	}
@@ -50,9 +50,9 @@ func (g *Graph[T]) TopSort() ([]*Node[T], bool) {
 	return res, true
 }
 
-func (g *Graph[T]) hasDirectedCycle() ([]*Node[T], bool) {
+func (g *Graph[T]) hasDirectedCycle() ([]T, bool) {
 	var (
-		cycle    []*Node[T]
+		cycle    []T
 		hasCycle bool
 	)
 
@@ -80,7 +80,7 @@ func (g *Graph[T]) hasDirectedCycle() ([]*Node[T], bool) {
 	return cycle, hasCycle
 }
 
-func (g *Graph[T]) hasUndirectedCycle() ([]*Node[T], bool) {
+func (g *Graph[T]) hasUndirectedCycle() ([]T, bool) {
 	panic("unimplemented")
 }
 

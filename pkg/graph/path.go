@@ -7,11 +7,11 @@ import (
 	"skiena/pkg/prioque"
 )
 
-func (g *Graph[T]) FindPath(start, end *Node[T], parent map[*Node[T]]*Node[T]) []*Node[T] {
-	var path []*Node[T]
+func FindPath[T comparable](start, end T, parent map[*T]*T) []T {
+	var path []T
 
-	for curr := end; curr != nil; curr = parent[curr] {
-		path = append(path, curr)
+	for curr := &end; curr != nil; curr = parent[curr] {
+		path = append(path, *curr)
 	}
 	slices.Reverse(path)
 
@@ -22,26 +22,33 @@ func (g *Graph[T]) FindPath(start, end *Node[T], parent map[*Node[T]]*Node[T]) [
 	return path
 }
 
-func (g *Graph[T]) ShortestPathDijkstra(start, end *Node[T]) []*Node[T] {
-	dist := make(map[*Node[T]]int)
-	intree := make(map[*Node[T]]bool)
-	parent := make(map[*Node[T]]*Node[T])
+func (g *Graph[T]) ShortestPathDijkstra(start, end T) ([]T, int) {
+	dist, parent := g.dijkstra(start, end)
+	return FindPath(start, end, parent), dist[end]
+}
 
-	for _, n := range g.Nodes {
+func (g *Graph[T]) dijkstra(
+	start, end T,
+) (map[T]int, map[*T]*T) {
+	dist := make(map[T]int)
+	intree := make(map[T]bool)
+	parent := make(map[*T]*T)
+
+	for n := range g.Nodes {
 		dist[n] = math.MaxInt
 	}
 	dist[start] = 0
 
-	pq := prioque.New[*Node[T]](prioque.Min)
-	pqAddNode := func(n *Node[T]) {
-		for _, e := range g.Edges[n.Label] {
+	pq := prioque.New[T](prioque.Min)
+	inspectOutEdges := func(n T) {
+		for _, e := range g.Edges[n] {
 			if intree[e.Dst] {
 				continue
 			}
 			if dist[n]+e.Weight < dist[e.Dst] {
 				dist[e.Dst] = dist[n] + e.Weight
-				parent[e.Dst] = n
-				pq.Push(&prioque.Item[*Node[T]]{
+				parent[&e.Dst] = &n
+				pq.Push(&prioque.Item[T]{
 					Value:    e.Dst,
 					Priority: dist[e.Dst],
 				})
@@ -49,7 +56,7 @@ func (g *Graph[T]) ShortestPathDijkstra(start, end *Node[T]) []*Node[T] {
 		}
 	}
 
-	pq.Push(&prioque.Item[*Node[T]]{
+	pq.Push(&prioque.Item[T]{
 		Value:    start,
 		Priority: 0,
 	})
@@ -64,12 +71,12 @@ func (g *Graph[T]) ShortestPathDijkstra(start, end *Node[T]) []*Node[T] {
 			continue
 		}
 
-		pqAddNode(next)
+		inspectOutEdges(next)
 
 		if next == end {
 			break
 		}
 	}
 
-	return g.FindPath(start, end, parent)
+	return dist, parent
 }

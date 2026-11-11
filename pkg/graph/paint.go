@@ -9,10 +9,10 @@ const (
 	uncolored color = "unknown"
 )
 
-func (g *Graph[T]) TwoColor() (map[*Node[T]]color, bool) {
-	colors := make(map[*Node[T]]color)
-	for _, node := range g.Nodes {
-		colors[node] = uncolored
+func (g *Graph[T]) TwoColor() (map[T]color, bool) {
+	colors := make(map[T]color)
+	for n := range g.Nodes {
+		colors[n] = uncolored
 	}
 
 	bipartite := true
@@ -37,7 +37,7 @@ func (g *Graph[T]) TwoColor() (map[*Node[T]]color, bool) {
 		return true
 	}
 
-	for _, n := range g.Nodes {
+	for n := range g.Nodes {
 		if !bipartite {
 			return nil, false
 		}
