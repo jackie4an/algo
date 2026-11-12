@@ -1,3 +1,6 @@
+/*
+find MIS in tree
+*/
 package main
 
 import (

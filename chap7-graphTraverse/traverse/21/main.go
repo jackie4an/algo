@@ -1,3 +1,6 @@
+/*
+find 3-way cycle in undirected graph
+*/
 package main
 
 import (

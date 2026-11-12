@@ -1,3 +1,6 @@
+/*
+find least dice throws in "chutes and ladders" game
+*/
 package main
 
 import (

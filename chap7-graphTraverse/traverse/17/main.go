@@ -1,3 +1,6 @@
+/*
+find max vertex cover in tree
+*/
 package main
 
 import (
