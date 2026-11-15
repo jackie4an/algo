@@ -1,3 +1,3 @@
-module skiena
+module algo
 
 go 1.27.1
