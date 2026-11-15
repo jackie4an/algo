@@ -4,7 +4,7 @@ import (
 	"math"
 	"slices"
 
-	"skiena/pkg/prioque"
+	"algo/skiena/pkg/prioque"
 )
 
 func FindPath[T comparable](start, end T, parent map[*T]*T) []T {

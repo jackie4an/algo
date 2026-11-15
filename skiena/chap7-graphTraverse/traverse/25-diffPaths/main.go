@@ -5,7 +5,7 @@ import (
 	"math"
 	"slices"
 
-	"skiena/pkg/graph"
+	"algo/skiena/pkg/graph"
 )
 
 type solver struct {

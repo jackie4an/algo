@@ -3,7 +3,7 @@ package graph_test
 import (
 	"testing"
 
-	"skiena/pkg/graph"
+	"algo/skiena/pkg/graph"
 )
 
 func TestInsertDirectedEdge(t *testing.T) {

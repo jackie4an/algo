@@ -8,7 +8,7 @@ import (
 	"math"
 	"slices"
 
-	"skiena/pkg/graph"
+	"algo/skiena/pkg/graph"
 )
 
 /*

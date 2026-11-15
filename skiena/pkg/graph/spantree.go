@@ -1,8 +1,8 @@
 package graph
 
 import (
-	"skiena/pkg/dsu"
-	"skiena/pkg/prioque"
+	"algo/skiena/pkg/dsu"
+	"algo/skiena/pkg/prioque"
 )
 
 func (g *Graph[T]) PrimMST(start T) *Graph[T] {

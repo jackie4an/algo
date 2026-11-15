@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"skiena/pkg/sort"
+	"algo/skiena/pkg/sort"
 )
 
 func main() {

@@ -6,7 +6,7 @@ package main
 import (
 	"fmt"
 
-	"skiena/pkg/graph"
+	"algo/skiena/pkg/graph"
 )
 
 func main() {

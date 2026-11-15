@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"skiena/pkg/sort"
+	"algo/skiena/pkg/sort"
 )
 
 func main() {
@@ -14,8 +14,8 @@ func main() {
 	i, j := 0, len(s2)-1
 	x1, x2 := -1, -1
 
-	sort.Quicksort(s1, 0, len(s1)-1)
-	sort.Quicksort(s2, 0, len(s2)-1)
+	sort.Quicksort(s1)
+	sort.Quicksort(s2)
 
 	for i < len(s1) && j >= 0 {
 		if s1[i]+s2[j] > z {
